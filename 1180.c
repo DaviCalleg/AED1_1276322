@@ -2,30 +2,27 @@
 
 int main() {
 
-int n, menor, posicao;
+int v[100], maior, posicao, estado = 0;
 
-scanf("%d", &n); //Leitura de n
-
-int X[n]; //Declaração do vetor
-
-//Leitura dos elementos
-for(int i = 0; i < n; i++){
-scanf("%d", &X[i]);
+for(int i = 0; i < 100; i++){
+        scanf("%d", &v[i]); //Leitura dos valores
 }
 
-//Menor elemento e posicao
-menor = X[0];
+//Maior elemento e posicao
+maior = v[0];
 posicao = 0;
 
-for(int i = 1; i < n; i++){
-if(menor > X[i]){
-menor = X[i];
-posicao = i;
-}
+for(int i = 0; i < 100; i++){
+    if(maior < v[i]){
+        maior = v[i];
+        posicao = i;
+    }
 }
 
-printf("Menor valor: %d", menor);
-printf("\nPosicao: %d", posicao);
+posicao += 1;
+
+printf("%d\n", maior);
+printf("%d", posicao);
 
 return 0;
 

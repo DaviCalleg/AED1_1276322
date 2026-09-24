@@ -53,29 +53,31 @@ int main(){
     tamanho = man_expressao(expressao);
     //Operações:
     for(int i = 0; i < tamanho; i++){
-        if(expressao[i] == '+' || expressao[i] == '-' || expressao[i] == '*' || expressao[i] == '/' || expressao[i] == '^'){
-            num1 = pop(primeiro_no);
-            num2 = pop(primeiro_no);
-            if(expressao[i] == '+'){
-                resultado = num2 + num1;
+        if(expressao[i] != ' '){
+            if(expressao[i] == '+' || expressao[i] == '-' || expressao[i] == '*' || expressao[i] == '/' || expressao[i] == '^'){
+                num1 = pop(primeiro_no);
+                num2 = pop(primeiro_no);
+                if(expressao[i] == '+'){
+                    resultado = num2 + num1;
+                }
+                if(expressao[i] == '-'){
+                    resultado = num2 - num1;
+                }
+                if(expressao[i] == '*'){
+                    resultado = num2 * num1;
+                }
+                if(expressao[i] == '/'){
+                    resultado = num2 / num1;
+                }
+                if(expressao[i] == '^'){
+                    resultado = pow(num2, num1);
+                }
+                push(primeiro_no, resultado);
             }
-            if(expressao[i] == '-'){
-                resultado = num2 - num1;
+            else{
+                int novo_conteudo = (expressao[i]) - '0';
+                push(primeiro_no, novo_conteudo);
             }
-            if(expressao[i] == '*'){
-                resultado = num2 * num1;
-            }
-            if(expressao[i] == '/'){
-                resultado = num2 / num1;
-            }
-            if(expressao[i] == '^'){
-                resultado = pow(num2, num1);
-            }
-            push(primeiro_no, resultado);
-        }
-        else{
-            int novo_conteudo = (expressao[i]) - '0';
-            push(primeiro_no, novo_conteudo);
         }
     }
     Tpilha * presultado;
@@ -90,3 +92,5 @@ int main(){
     printf("O resultado final eh: %d", resultado_final);
     return 0;
 }
+
+///Resolver problema de numero com mais de uma casa.

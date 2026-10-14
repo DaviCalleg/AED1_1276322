@@ -10,167 +10,173 @@ Objetivo    : Transforma uma expressão infixa em posfixa
 Dificuldade : 
 Uso de IA   : 
 -------------------------------------------------------------------------- */
+//Estruturas Dinâmicas:
+typedef struct pilha Tpilha;
+typedef struct fila Tfila;
 
-typedef struct fila_operandos Tfila;
-
-struct fila_operandos{
-    char operando;
-    Tfila * prox;
-};
-
-typedef struct operadores Tpilha;
-
-struct operadores{
+struct pilha{
     char operador;
     Tpilha * prox;
 };
 
-//Expressao final:
-char expressao_final[300];
-int posicao = 0;
+struct fila{
+    char operando;
+    Tfila * prox;
+};
 
-int num_string(char expressao[]){
-    int contagem = 0;
-    for(int i= 0; expressao != '\n'; i++){
-        contagem++;
-    }
-    return contagem;
+int tamanho_expressao(char expressao_infixa[]){
+    int tamanho = 0;
+    for(int i = 0; expressao_infixa[i] != '\0' && expressao_infixa[i] != '\n'; i++){
+        tamanho++;
+    };
+    return tamanho;
 }
-int verificando_parenteses(char expressao[],int tamanho){
-    int verificacao = 0;
-    for(int i = 0; i < tamanho; i++){
-        if(expressao[i] == '('){
-            verificacao = 1;
-        }
-    }
-    return verificacao;
-}
-void avaliacao_parenteses(char expressao[], int tamanho, Tfila * cabeca_fila, Tfila * cauda_fila, Tpilha * cabeca_pilha){
-    char expressao_parenteses[300];
-    int tamanho_nova_string = 0;
-    for(int i = 0; i < tamanho;i++){
-        if(expressao[i] == '('){
-            //A nova expressão vai começar uma casa a frente do parênteses;
-            for(int j = (i + 1); expressao[j] != ')'; j++){
-                expressao_parenteses[j - (i + 1)] = expressao[j];
-            }
-            tamanho_nova_string = num_string(expressao_parenteses);
-            notacao_polonesa(expressao_parenteses,tamanho_nova_string, cabeca_fila, cauda_fila, cabeca_pilha);
-        }
-    }
-}
-int verificacao_string_vazia(){
-    int verificacao = 0;
-    if(expressao_final[0] != NULL){
-        verificacao = 1;
-    }
-    return verificacao;
-}
-void notacao_polonesa(char expressao[],int tamanho,Tfila * cabeca_fila, Tfila * cauda_fila, Tpilha * cabeca_pilha){
-    //Ponto Principal do Problema:
-    //Percorrer a expressão e adicionar na pilha ou fila;
-    int verificacao_string = 0, qtd_operando = 0; //Verificando se a string esta vazia. Será necessário dois operandos pra sair o operador:
-    verificacao_string = verificacao_string_vazia();
-    if(verificacao_string == 0){
-      for(int k = 0; k < tamanho; k++){
-
-            if(expressao[k] == '+' || expressao[k] == '-' || expressao[k] == '*' || expressao[k] == '/' || expressao[k] == '^'){
-                //É um operador e vai para a pilha
-                push_pilha(cabeca_pilha, expressao[k]);
-            }
-            else if(expressao[k] >= '0' && expressao[k] <= '9'|| expressao[k] >= 'a' && expressao[k] <= 'z' || expressao[k] >= 'A' && expressao[k] <= 'Z'){
-                //É um operando e vai pra pilha
-                push_fila(cabeca_fila, cauda_fila, expressao[k]);
-            }
-        }  
-    }else{
-
-    }     
-}
-void push_pilha(Tpilha * cabeca_pilha, char operando){
-    Tpilha * novo;
-    novo = malloc(sizeof(Tpilha)); //Considerando que deu certo
-    novo->operador = operando;
-    novo->prox = cabeca_pilha->prox;
-    cabeca_pilha->prox = novo;
-}
-void push_fila(Tfila * cabeca_fila, Tfila * cauda_fila, char operando){
+void push_fila(Tfila* ponteiro_fila, char operando){
     Tfila * novo;
-    novo = malloc(sizeof(Tfila)); //Considerando que deu certo
-    if(cabeca_fila->prox == NULL){
+    novo = malloc(sizeof(Tfila));
+    if(novo == NULL){
+        printf("A alocacao Falhou!");
+    }
+    else{
         novo->operando = operando;
-        novo->prox = cabeca_fila->prox;
-        cabeca_fila->prox = novo;
-        cauda_fila->prox = novo;
+        novo->prox = ponteiro_fila->prox;
+        ponteiro_fila->prox = novo;
+    }
+}
+
+void push_pilha(Tpilha * ponteiro_pilha, char operador){
+    Tpilha * novo;
+    novo = malloc(sizeof(Tpilha));
+    if(novo == NULL){
+        printf("Alocacao falhou!");
+    }
+    else{
+       novo->operador = operador;
+       novo->prox = ponteiro_pilha->prox;
+       ponteiro_pilha->prox = novo;
+    }
+}
+void pop_pilha(Tpilha * ponteiro_pilha, int pos, char expressao_posfixa[]){
+    
+    Tpilha * aux;
+    aux = ponteiro_pilha->prox;
+    ponteiro_pilha->prox = aux;
+    while(aux != NULL){
+        expressao_posfixa[pos] = aux->operador;
+        aux = aux->prox;
+        free(ponteiro_pilha->prox);
+        ponteiro_pilha->prox = aux;
+        pos++;
+    }
+    
+}
+int comparando_operadores(char expressao_infixa[], int posicao, int prox_operador){
+    int v_operador, v_prox_operador;
+    //Dando valor ao operador;
+    if(expressao_infixa[posicao] == '+' || expressao_infixa[posicao] == '-'){
+        v_operador = 1;
+    }
+    else if(expressao_infixa[posicao] == '*' || expressao_infixa[posicao] == '/'){
+        v_operador = 2;
+    }
+    else if(expressao_infixa[posicao] == '^' || expressao_infixa[posicao] == ')'){
+        v_operador = 3;
+    }
+    //Dando valor ao prox_operador;
+    if(expressao_infixa[prox_operador] == '+' || expressao_infixa[prox_operador] == '-'){
+        v_operador = 1;
+    }
+    else if(expressao_infixa[prox_operador] == '*' || expressao_infixa[prox_operador] == '/'){
+        v_operador = 2;
+    }
+    else if(expressao_infixa[prox_operador] == '^' || expressao_infixa[prox_operador] == ')'){
+        v_operador = 3;
+    }
+
+    if(v_operador < v_prox_operador){
+        return 1;
     }else{
-        novo->operando = operando;
-        novo->prox = cabeca_fila->prox;
-        cabeca_fila->prox = novo;
-    } 
-}
-void pop_fila(Tfila * cauda_fila, Tfila * cabeca_fila){
-    Tfila * sair_elemento;
-    Tfila * aux;
-    int elemento_addf; 
-    sair_elemento = cauda_fila->prox;
-    elemento_addf = sair_elemento->operando;
-    adicionando_string(elemento_addf);
-    free(sair_elemento);
-    for(Tfila * p = cabeca_fila->prox; p->prox != NULL; p = p->prox){
-        aux = p;
+        return 0;
     }
-    cauda_fila->prox = aux;
 }
-pop_pilha(Tpilha * cabeca_pilha){
-    char elemento_add;
-    Tpilha * sair_elemento;
-    sair_elemento = cabeca_pilha->prox;
-    cabeca_pilha->prox = sair_elemento->prox;
-    elemento_add = sair_elemento->operador;
-    adicionando_string(elemento_add);
-    free(sair_elemento);
+int prioridade_operador(char expressao_infixa[], int posicao){
+    int prioridade;
+    int prox_operador = posicao;
+    while(expressao_infixa[prox_operador] != '+' || expressao_infixa[prox_operador] != '-' || expressao_infixa[prox_operador] != '*' || expressao_infixa[prox_operador] != '/' || expressao_infixa[prox_operador] != '^' || expressao_infixa[prox_operador] != ')' || expressao_infixa[prox_operador] != '\0'){
+        prox_operador++;
+    }
+    if(expressao_infixa[prox_operador] == '\0'){
+        prioridade = 1;
+        return prioridade;
+    }
+    else{
+        prioridade = comparando_operadores(expressao_infixa, posicao, prox_operador);
+        return prioridade; 
+    }
 }
-void adicionando_string(char adicionar){
-    expressao_final[posicao] = adicionar;
-    posicao++;
-}
+
 int main(){
-    //Criando e alocando estruturas dinâmicas;
-    //Cabeca para pilha:
-    Tpilha * cabeca_pilha;
-    cabeca_pilha = malloc(sizeof(Tpilha)); //Considerando que deu certo
-    cabeca_pilha->operador = NULL;
-    cabeca_pilha->prox = NULL;
-    //Criando cabeça e cauda para fila:
-    Tfila * cabeca_fila;
-    cabeca_fila = mallco(sizeof(Tfila)); //Considerando que deu certo
-    cabeca_fila->operando = NULL;
-    Tfila * cauda_fila;
-    cauda_fila = malloc(sizeof(Tfila)); //Considerando que deu certo
-    cauda_fila->operando = NULL;
-    cabeca_fila->prox = NULL;
-    cauda_fila->prox = NULL;
-
-    //Leitura da quantidade de expressões:
-    int casos;
-    scanf("%d", &casos);
-
-    //Recepção da expressão;
-    while(casos != 0){
-        char expressao[300];
-        fgets(expressao,300,stdin);
-        int tamanho = num_expressao(expressao);
-
-        //Avaliando parenteses e dividindo em casos:
-        int verificacao_p;
-        verificacao_p = (expressao,tamanho);
-        if(verificacao_p == 1){
-        avaliacao_parenteses(expressao, tamanho, cabeca_fila, cauda_fila, cabeca_pilha);    
-        }
-        else{
-            //Caso não tenha parenteses seguimos para a transformação
-            notacao_polonesa(expressao,tamanho, cabeca_fila, cauda_fila, cabeca_pilha);
-        }
+    //Recebendo o número de casos:
+    int N;
+    do{
+        scanf("%d", &N);
+        //Limapndo o Buffer:
+        int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+    }while(N < 1 || N > 1000);
+    //Criando as estruturas dinâmicas e alocando memória:
+    Tpilha * ponteiro_pilha;
+    ponteiro_pilha = malloc(sizeof(Tpilha));
+    Tfila * ponteiro_fila;
+    ponteiro_fila = malloc(sizeof(Tfila));
+    if((ponteiro_pilha == NULL) || (ponteiro_fila == NULL)){
+        printf("Alocação Falhou");
+        return 1;
     }
+    ponteiro_fila->prox = NULL;
+    ponteiro_pilha->prox = NULL;
+    //Analisando as expressoes
+    while(N != 0){
+        int pos = 0;
+        //Criando o vetor de char para ler a expressão com até 300 caracteres;
+        char expressao_infixa[300];
+        //Vetor que vai guardar a expressao já convertida;
+        char expressao_posfixa[300];
+        //Fazendo a leitura da expressao infixa:
+            fgets(expressao_infixa, 300, stdin);
+            //Vendo seu tamanho:
+            int tamanho_infixa = tamanho_expressao(expressao_infixa);
+            //Começando a "tradução" para posfixa;
+            for(int j = 0; j < tamanho_infixa; j++){
+                int verificacao = 0;
+                //Verificando se é um operador ou um operando;
+                if((expressao_infixa[j] < 'A' && expressao_infixa[j] > 'Z') || (expressao_infixa[j] < 'a' && expressao_infixa[j] > 'z') || (expressao_infixa[j] > '0' && expressao_infixa[j] < '9')){
+                    //Caso seja, vamos direto na string nova:
+                    expressao_posfixa[pos] = expressao_infixa[j];
+                    verificacao++;
+                    pos++;
+                }
+                else if(expressao_infixa[j] == '+' || expressao_infixa[j] == '-' || expressao_infixa[j] == '*' || expressao_infixa[j] == '/' || expressao_infixa[j] == '^' || expressao_infixa[j] == ')' || expressao_infixa[j] == '(' ){
+                    if(verificacao == 2){
+                        int prioridade = prioridade_operador(expressao_infixa, j);
+                        if(prioridade == 0){
+                            push_pilha(ponteiro_pilha, expressao_infixa[j]);
+                        }
+                        else if(prioridade == 1){
+                            //Coloco tudo que tem na pilha na string:
+                            push_pilha(ponteiro_pilha, expressao_infixa[j]);
+                            pop_pilha(ponteiro_pilha, pos, expressao_posfixa);
+                        }
+                    }
+                }
+                
+            }
+        //Adicionando o \0 no final da string:
+        expressao_posfixa[tamanho_infixa];
+        //Imprimindo a expressao posfixa
+        printf("%s", expressao_posfixa);
+        N--;
+    }
+
     return 0;
 }
